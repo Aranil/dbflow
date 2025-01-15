@@ -3,7 +3,7 @@ Module to handle SQLite database operations and provide utilities
 
 
 
-run pip install git+ssh://git@github.com/your-user/your-private-repo.git to install package
+run pip install git+ssh://git@github.com/Aranil/dbflow.git to install package
 
 run conda env create -f environment.yml to install required packages in conda env
 
