@@ -169,3 +169,28 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+
+
+
+# Python files
+*.pyc
+__pycache__/
+
+# Virtual environments
+venv/
+env/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Sensitive files
+# db module customized
+dbflow/sql/
+.env
