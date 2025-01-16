@@ -1081,4 +1081,3 @@ def query_sql(sql, db_engine):
         logger.error(f"Error executing SQL query: {e}")
         raise
 
-

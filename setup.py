@@ -16,6 +16,9 @@ setup(
     url="https://github.com/Aranil/dbflow",
     packages=find_packages(),
     include_package_data=True,  # Include non-Python files specified in MANIFEST.in
+    package_data={
+        'dbflow.dbflow': ['sql/*.sql'],  # Include all .sql files in the sql folder
+    },
     classifiers=[
         "Programming Language :: Python :: 3.10",
         "License :: OSI Approved :: MIT License",

@@ -12,7 +12,6 @@ dbflow.egg-info/top_level.txt
 dbflow/additional/__init__.py
 dbflow/additional/_compare_tables_from_db.py
 dbflow/additional/_create_db_report.py
-dbflow/sql/__init__.py
 dbflow/src/__init__.py
 dbflow/src/db_sqlalchemy.py
 dbflow/src/db_utility.py
