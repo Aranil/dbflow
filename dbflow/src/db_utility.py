@@ -31,7 +31,7 @@ import ctypes
 from sqlalchemy import event
 from typing import Union, Dict, List
 
-import dbflow.sql
+import dbflow
 
 # from shapely.geometry import Point
 # from shapely.wkt import loads
