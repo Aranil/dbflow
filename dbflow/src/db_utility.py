@@ -31,7 +31,7 @@ import ctypes
 from sqlalchemy import event
 from typing import Union, Dict, List
 
-import dbflow.dbflow.sql
+import dbflow.sql
 
 # from shapely.geometry import Point
 # from shapely.wkt import loads
@@ -981,7 +981,7 @@ def create_sql(sql_file='main_query_datatypes_barchart.sql', replacements=None, 
     """
     # logger.info('Directory of the SQL files: {}'.format(db_utils.sql.__file__))
 
-    res_file = pkg_resources.resource_string('dbflow.dbflow.sql', sql_file).decode('utf-8')
+    res_file = pkg_resources.resource_string('dbflow.sql', sql_file).decode('utf-8')
 
     if replacements is not None:
         for placeholder, value in replacements.items():
@@ -1008,7 +1008,7 @@ def create_sql(sql_file='main_query_datatypes_barchart.sql', replacements=None, 
 
 
 def generate_internal_temp_folder(folder_name):
-    f_dir = Path(dbflow.dbflow.sql.__file__).parent.parent.parent.parent.joinpath(folder_name)
+    f_dir = Path(dbflow.sql.__file__).parent.parent.parent.parent.joinpath(folder_name)
     try:
         f_dir.mkdir(parents=True, exist_ok=False)
     except FileExistsError:
