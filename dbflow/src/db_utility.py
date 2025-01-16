@@ -909,7 +909,7 @@ def tables_to_create():
 
     # Import the db_structure module dynamically
     try:
-        db_structure_module = importlib.import_module('db_utils.db_structure')
+        db_structure_module = importlib.import_module('dbflow.db_structure')
     except ModuleNotFoundError as e:
         print(f"Module not found: {e}")
         return tables
@@ -920,7 +920,7 @@ def tables_to_create():
         logger.info(f"Class Module: {cls.__module__}")
 
         # Check if the class belongs to the 'src.db_structure' module
-        if cls.__module__ == 'db_utils.db_structure':
+        if cls.__module__ == 'dbflow.db_structure':
             # Safely get the table associated with the class, if it exists
             if hasattr(cls, '__table__'):
                 print(f"Table for {name}: {cls.__table__}")
