@@ -1,4 +1,9 @@
 from setuptools import setup, find_packages
+from pathlib import Path
+
+
+long_description = Path("README.md").read_text() if Path("README.md").exists() else ""
+
 
 setup(
     name="dbflow",
@@ -6,14 +11,15 @@ setup(
     author="Aranil",
     author_email="linara.arslanova@uni-jena.de",
     description="Module to handle SQLite database operations and provide utilities",
-    long_description=open("README.md").read(),
+    long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/Aranil/dbflow",
     packages=find_packages(),
+    include_package_data=True,  # Include non-Python files specified in MANIFEST.in
     classifiers=[
-        "Programming Language :: Python :: 10",
+        "Programming Language :: Python :: 3.10",
         "License :: OSI Approved :: MIT License",
-        "Operating System :: WIN 10",
+        "Operating System :: Microsoft :: Windows",
     ],
     python_requires='>=3.10',
     install_requires=[

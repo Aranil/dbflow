@@ -1,0 +1,15 @@
+# Include important project-level files
+include README.md
+include LICENSE
+include setup.py
+
+# Include all Python files in the dbflow package
+recursive-include dbflow *.py
+
+# Include data files in the dbflow package
+recursive-include dbflow *.json
+recursive-include dbflow *.txt
+
+# Exclude unnecessary files
+exclude *.log
+prune tests/
