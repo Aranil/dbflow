@@ -39,6 +39,11 @@ setup(
     ],
 )
 
-# run conda env create -f environment.yml to install required packages in conda env
+# run to generate a python package
+# python setup.py sdist bdist_wheel
 
-# run pip install git+ssh://git@github.com/your-user/your-private-repo.git to install package
+# run to install required packages in conda env
+# conda env create -f environment.yml
+
+# run to install package
+# pip install git+ssh://git@github.com/your-user/your-private-repo.git

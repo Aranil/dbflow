@@ -3,16 +3,34 @@ this reads the db schema and plots a connection graph of the tables
 '''
 
 
-from db_utility import connect2db
+from custom_template import connect2db
 import pandas as pd
-import logging
 import networkx as nx
 import matplotlib.pyplot as plt
 
 
 
 
-def get_table_relationships(db_path, conn, excluded_prefixes):
+def get_table_relationships(conn, excluded_prefixes):
+    """
+    Extracts table relationships and primary key information from a SQLite database.
+
+    Parameters
+    ----------
+    conn : sqlite3.Connection
+        An active SQLite database connection.
+        Examp:
+            dbarchive = connect2db(db_path)
+            conn = dbarchive.archive.conn
+    excluded_prefixes : list of str
+        List of table name prefixes to exclude from processing.
+
+    Returns
+    -------
+    tuple of (pd.DataFrame, dict)
+        - pd.DataFrame: A DataFrame containing the relationships between tables (source table, target table, etc.).
+        - dict: A dictionary where keys are table names and values are lists of primary key column names.
+    """
     relationships = []
     primary_keys = {}
 
@@ -52,6 +70,34 @@ def get_table_relationships(db_path, conn, excluded_prefixes):
 
 def plot_relationship_graph(relationships_df, primary_keys, group_colors, label_font_size=14,
                             pk_font_size=10, figsize=(14, 14), layout_type='shell', save_to=None):
+    """
+    Plots a graph of table relationships using NetworkX.
+
+    Parameters
+    ----------
+    relationships_df : pd.DataFrame
+        DataFrame containing the table relationships (source table, target table, and their columns).
+    primary_keys : dict
+        A dictionary where keys are table names and values are lists of primary key column names.
+    group_colors : dict
+        A dictionary where keys are table names and values are colors for visual grouping.
+    label_font_size : int, optional
+        Font size for table labels (default is 14).
+    pk_font_size : int, optional
+        Font size for primary key labels (default is 10).
+    figsize : tuple of (int, int), optional
+        Size of the plot (default is (14, 14)).
+    layout_type : str, optional
+        Layout type for the graph (options: 'shell', 'circular', 'spring', 'kamada_kawai'; default is 'shell').
+    save_to : str, optional
+        Path to save the generated plot. If None, the plot is not saved.
+
+    Returns
+    -------
+    None
+        Displays the generated graph plot or saves it to a file.
+    """
+
     G = nx.DiGraph()
 
     # Group nodes by their assigned colors
@@ -223,7 +269,7 @@ conn = dbarchive.archive.conn
 excluded_prefixes = ['geometry', 'idx', 'virts', 'views', 'spatial', 'report', 'sql', 'lost']
 
 # this function also will exclude the tables that are empty in the DB
-relationships_df, primary_keys = get_table_relationships(db_path, conn, excluded_prefixes)
+relationships_df, primary_keys = get_table_relationships(conn, excluded_prefixes)
 plot_relationship_graph(relationships_df,
                         primary_keys,
                         group_colors,

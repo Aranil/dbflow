@@ -7,31 +7,25 @@ Setup for a database
 import importlib
 import inspect
 import os
-import re
 import sqlite3
-import urllib.request
-import py7zr
-import zipfile
 import pkg_resources
 import pandas as pd
 import geopandas as gpd
 from shapely.geometry import box
 
 from sqlalchemy import create_engine, MetaData
-from sqlalchemy import exists, Table
+from sqlalchemy import exists
 from sqlalchemy.dialects import sqlite
 from sqlalchemy.sql import text
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Table
-from sqlalchemy.exc import NoSuchTableError
 import sqlalchemy
-import shutil
 import ctypes
 from sqlalchemy import event
 from typing import Union, Dict, List
 
-import dbflow
+import custom_template
 
 # from shapely.geometry import Point
 # from shapely.wkt import loads
@@ -47,7 +41,6 @@ import dbflow
 
 
 from pathlib import Path
-import sys
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -1008,7 +1001,7 @@ def create_sql(sql_file='main_query_datatypes_barchart.sql', replacements=None, 
 
 
 def generate_internal_temp_folder(folder_name):
-    f_dir = Path(dbflow.sql.__file__).parent.parent.parent.parent.joinpath(folder_name)
+    f_dir = Path(custom_template.sql.__file__).parent.parent.parent.parent.joinpath(folder_name)
     try:
         f_dir.mkdir(parents=True, exist_ok=False)
     except FileExistsError:
@@ -1081,3 +1074,61 @@ def query_sql(sql, db_engine):
         logger.error(f"Error executing SQL query: {e}")
         raise
 
+
+
+import configparser
+import os
+import importlib.util
+
+def get_custom_paths():
+    """
+    Reads custom paths from the config.ini file and provides fallback paths
+    if the configuration is missing or invalid.
+
+    Returns
+    -------
+    dict
+        A dictionary containing paths for custom SQL and database structure.
+    """
+    config = configparser.ConfigParser()
+    config_path = os.path.join(os.path.dirname(__file__), '../../config.ini')
+
+    # Check if the config.ini file exists
+    if not os.path.exists(config_path):
+        print("Config file not found. Falling back to default paths.")
+        return {
+            'custom_sql_dir': './custom_template/sql',
+            'custom_db_structure': './custom_template/db_structure.py'
+        }
+
+    # Read the configuration file
+    config.read(config_path)
+
+    # Get paths with fallbacks
+    return {
+        'custom_sql_dir': config.get('paths', 'custom_sql_dir', fallback='./custom_template/sql'),
+        'custom_db_structure': config.get('paths', 'custom_db_structure', fallback='./custom_template/db_structure.py'),
+    }
+
+
+def load_custom_structure():
+    """
+    Dynamically loads the custom db_structure.py script based on the paths provided in config.ini.
+
+    Returns
+    -------
+    module or None
+        The loaded custom db_structure module, or None if the file does not exist.
+    """
+    paths = get_custom_paths()
+    custom_db_structure_path = paths['custom_db_structure']
+
+    # Check if the custom db_structure.py exists
+    if os.path.exists(custom_db_structure_path):
+        spec = importlib.util.spec_from_file_location("custom.db_structure", custom_db_structure_path)
+        custom_module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(custom_module)
+        return custom_module
+    else:
+        print(f"Custom db_structure.py not found. Using default behavior.")
+        return None

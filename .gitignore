@@ -195,6 +195,6 @@ Thumbs.db
 
 # Sensitive files
 # db module customized
-dbflow/sql/
+custom_template/sql/
 .env
 

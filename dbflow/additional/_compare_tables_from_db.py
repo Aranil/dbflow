@@ -4,7 +4,7 @@ compare DB content and return the differences in the row (column - not integrate
 '''
 
 
-from db_utility import connect2db
+from custom_template import connect2db
 import pandas as pd
 import logging
 
@@ -24,6 +24,30 @@ logging.basicConfig(filename='../../../UAVpExtraction/src/db/db_comparison.log',
 
 
 def compare_dataframes(table_name, df1, df2, db_path1, db_path2, primary_keys=None):
+    """
+    Compares two DataFrames representing table data and logs differences.
+
+    Parameters
+    ----------
+    table_name : str
+        Name of the table being compared.
+    df1 : pd.DataFrame
+        DataFrame representing the table data from the first database.
+    df2 : pd.DataFrame
+        DataFrame representing the table data from the second database.
+    db_path1 : str
+        Path to the first database.
+    db_path2 : str
+        Path to the second database.
+    primary_keys : list of str, optional
+        List of primary key column names for identifying unique rows (default is None).
+
+    Returns
+    -------
+    None
+        Logs and prints differences between the DataFrames, if any.
+    """
+
     # Align DataFrames by their columns
     df1, df2 = df1.align(df2, join='outer', axis=1, fill_value=None)
 
@@ -67,6 +91,24 @@ def compare_dataframes(table_name, df1, df2, db_path1, db_path2, primary_keys=No
 
 # Function to store information about tables in DB1 into a CSV
 def store_db_info_csv(table_names, db_path, output_csv):
+    """
+    Extracts database table metadata and saves it to a CSV file.
+
+    Parameters
+    ----------
+    table_names : list of str
+        List of table names to process.
+    db_path : str
+        Path to the database file.
+    output_csv : str
+        Path to the output CSV file.
+
+    Returns
+    -------
+    None
+        Saves a CSV file containing metadata for each table, including existence, primary keys, and column names.
+    """
+
     # Initialize an empty DataFrame to store the table information for dbarchive1
     table_info_df = pd.DataFrame(columns=['Table Name', 'Exists in DB', 'Is Empty',
                                           'Has Geometry Column', 'Primary Keys', 'Column Names'])
