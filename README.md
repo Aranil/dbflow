@@ -1,39 +1,6 @@
 # dbflow
 Module to handle SQLite database operations and provide utilities
 
-
-
-## Customizable SQL Folder and `db_structure.py`
-
-The `dbflow` module provides a flexible structure for managing a database schema and queries:
-- **Custom SQL Folder**: A folder where one can add its own `.sql` files for custom database operations. 
-- **Execution History**: All executed or rendered SQL commands are stored in `_sql_executed` for tracking.
-- **Dynamic Inputs**: Create reusable parameterized scripts for flexible database queries.
-- **`db_structure.py` Script**: A Python script that allows one to define or modify table structures programmatically.
-
-### How It Works
-1. Place your custom SQL scripts in the `dbflow/sql` folder. These scripts can be parameterized for dynamic input or static for predefined operations.
-  When a script is executed, the SQL command (rendered with parameters, if applicable) is stored in a dedicated folder named _sql_executed outside the module directory.
-  This ensures a record of all executed commands for auditing or debugging.
-  Use placeholders like :param_name to create reusable SQL scripts that accept dynamic inputs.
-  Example of execution with parameters:
-   
-    import db_utility
-   
-    sql = db_utility.create_sql(sql_file='_custom_query.sql', 
-                    replacements={':formatted_date': formatted_date,
-                                  ':sl_nr': sl_nr,
-                                  ':CROP_TYPE_CODE': CROP_TYPE_CODE
-                                    }
-                    )
-    db_utility.query_sql(sql='custom_query.sql', db_engine=dbatabase.archive.engine)
-
-
-2. Use `db_structure.py` to programmatically define or modify database table structures.
-3. Execute your custom SQL or table structure changes through the `dbflow` module.
-
-
-
 To install the module run
 
 run pip install git+ssh://git@github.com/Aranil/dbflow.git to install package
@@ -42,7 +9,172 @@ To install required packages in conda env
 
 run conda env create -f environment.yml 
 
+customized .sql files in folder sql - contact @Aranil to add to your module if required
 
-customized .sql files in folder sql - contact @Aranil to add to your module
+
+## Customizable SQL Folder and `db_structure.py`
+
+The `dbflow` module provides flexibility for customization through a `custom_template` folder, which contains example SQL scripts and table definitions. Users can extend or modify these examples to suit their specific requirements.
+
+### Key Features
+- **Custom SQL Folder**: A folder where users can add their own `.sql` files for custom database operations.
+- **Execution History**: All executed or rendered SQL commands are stored in a dedicated folder named `_sql_executed`, located outside the module directory, for tracking and debugging.
+- **Dynamic Inputs**: Create reusable, parameterized SQL scripts that accept dynamic inputs for flexible database queries.
+- **`db_structure.py` Script**: A Python script that allows users to define or modify table structures programmatically.
+
+---
+
+### How It Works
+
+#### **1. Place Custom SQL Scripts**
+Place your custom SQL scripts in the `dbflow/sql` folder (or a copied version of the `custom_template/sql` folder in your project). SQL scripts can be:
+- **Parameterized**: Use placeholders like `:param_name` for dynamic inputs.
+- **Static**: Define fixed, predefined SQL operations.
+
+When a script is executed, the rendered SQL (with parameters applied, if any) is stored in the `_sql_executed` folder for auditing or debugging purposes.
+
+```python
+import dbflow.src.db_utility as db_utility
+
+# Render and execute a parameterized SQL script
+sql = db_utility.create_sql(
+    sql_file='custom_query.sql',
+    replacements={
+        ':formatted_date': formatted_date,
+        ':sl_nr': sl_nr,
+        ':CROP_TYPE_CODE': CROP_TYPE_CODE,
+    }
+)
+db_utility.query_sql(sql=sql, db_engine=database.archive.engine)
+```
 
 
+#### **Application Directory (`my_application/`)**
+```plaintext
+my_application/
+├── custom/                 # User-specific customizations
+│   ├── db_structure.py     # User-defined database schema
+│   ├── sql/                # User-defined SQL scripts
+│   │   ├── custom_query.sql
+│   │   ├── example_schema.sql
+├── main.py                 # Application entry point
+├── dbflow/                 # Installed dbflow module
+│   ├── src/                # Core logic of dbflow
+│   │   ├── db_sqlalchemy.py  # Core SQLAlchemy-related utilities
+│   │   ├── db_utility.py     # Utility functions (e.g., `get_custom_paths`, `load_custom_structure`)
+│   ├── additional/         # Additional utilities and scripts
+│   │   ├── _create_db_report.py  # Generate database schema reports
+│   │   ├── _compare_tables_from_db.py  # Compare table data between databases
+│   ├── config.ini          # Configuration file for paths
+├── custom_template/        # Example user-specific customization (outside `dbflow`)
+│   ├── db_structure.py
+│   ├── sql/
+│   │   ├── example_query.sql
+
+
+```
+
+2. Use `db_structure.py`  script to programmatically define or modify database table structures. This script can be copied from the `custom_template` folder into your project and extended as needed.
+3. Execute your custom SQL or table structure changes through the `dbflow` module.
+
+
+
+### Update `config.ini`
+
+Edit `config.ini` in the `dbflow` module to point to the copied `custom` folder in your project:
+
+```ini
+[paths]
+custom_sql_dir = ./my_application/custom/sql
+custom_db_structure = ./my_application/custom/db_structure.py
+```
+
+### Default Behavior
+
+If `config.ini` is not updated, `dbflow` will fall back to using the `custom_template` folder included in the module.
+
+
+### Example: Using a Custom `db_structure.py`
+
+The following example demonstrates how to use the `load_custom_structure` function to dynamically load a custom `db_structure.py` file based on the paths configured in `config.ini`. If the custom structure is found, it initializes the database using the user-defined table schema. If not, it falls back to the default behavior.
+
+#### Code Example
+```python
+from dbflow.src.db_utility import load_custom_structure
+from dbflow.src.db_sqlalchemy import connect2db
+from decouple import config
+
+def main():
+    # Connect to the database
+    dbarchive = connect2db(config('DB_PATH_MAIN'))
+    engine = dbarchive.archive.engine
+
+    # Load the custom db_structure.py
+    custom_structure = load_custom_structure()
+
+    if custom_structure:
+        # If the custom structure is found, initialize the database
+        with engine.connect() as connection:
+            cursor = connection.connection.cursor()
+            custom_structure.define_tables(cursor)
+            connection.commit()
+        print("Custom tables initialized successfully!")
+    else:
+        print("No custom structure found. Using default behavior.")
+
+if __name__ == "__main__":
+    main()
+```    
+
+
+
+
+
+
+# Additional Scripts
+
+The `additional/` folder contains utility scripts to extend the functionality of the application. These scripts are designed for specific tasks such as visualizing database relationships, comparing tables across databases, or generating reports.
+
+## Scripts in this Folder
+
+### 1. `_create_db_reports.py`
+
+#### Purpose
+Generates a detailed report of the database schema and plots a connection graph of the tables. It visualizes relationships between tables and highlights primary and foreign key dependencies.
+
+#### Features
+- Reads the database schema.
+- Visualizes table relationships using a directed graph.
+- Identifies primary keys and foreign key dependencies.
+
+#### Key Functions
+- **`get_table_relationships(db_path, conn, excluded_prefixes)`**
+  - Extracts table relationships and primary key information.
+  - **Parameters:**
+    - `db_path`: Path to the SQLite database file.
+    - `conn`: SQLite database connection.
+    - `excluded_prefixes`: List of table prefixes to exclude from processing.
+  - **Returns:** A DataFrame of relationships and a dictionary of primary keys.
+
+- **`plot_relationship_graph(relationships_df, primary_keys, group_colors, ...)`**
+  - Plots a graph of table relationships.
+  - **Parameters:**
+    - `relationships_df`: DataFrame of table relationships.
+    - `primary_keys`: Dictionary of primary keys for each table.
+    - `group_colors`: Color groups for tables in the graph.
+  - **Returns:** None (Displays or saves the graph).
+
+#### Example Usage
+```python
+from additional._create_db_reports import get_table_relationships, plot_relationship_graph
+
+db_path = r'...\RCM.db'
+dbarchive = connect2db(db_path)  # Connect to your database
+conn = dbarchive.archive.conn
+
+# Get table relationships
+relationships, primary_keys = get_table_relationships(conn=conn, excluded_prefixes=['temp'])
+
+# Plot the relationships
+plot_relationship_graph(relationships, primary_keys, group_colors={"users": "blue", "orders": "green"})
+```
