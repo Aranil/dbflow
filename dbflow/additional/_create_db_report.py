@@ -3,7 +3,7 @@ this reads the db schema and plots a connection graph of the tables
 '''
 
 
-from custom_template import connect2db
+from dbflow.src.db_utility import connect2db
 import pandas as pd
 import networkx as nx
 import matplotlib.pyplot as plt

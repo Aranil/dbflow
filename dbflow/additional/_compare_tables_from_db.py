@@ -4,7 +4,7 @@ compare DB content and return the differences in the row (column - not integrate
 '''
 
 
-from custom_template import connect2db
+from dbflow.src.db_utility import connect2db
 import pandas as pd
 import logging
 

@@ -1132,3 +1132,37 @@ def load_custom_structure():
     else:
         print(f"Custom db_structure.py not found. Using default behavior.")
         return None
+
+
+def load_sql_file(file_name):
+    """
+    Loads the content of an SQL file from the custom SQL directory.
+
+    Parameters
+    ----------
+    file_name : str
+        Name of the SQL file to load.
+
+    Returns
+    -------
+    str
+        The content of the SQL file as a string.
+
+    Raises
+    ------
+    FileNotFoundError
+        If the SQL file does not exist in the custom directory.
+    """
+    # Resolve the custom SQL directory from the config
+    paths = get_custom_paths()
+    custom_sql_dir = Path(paths['custom_sql_dir'])
+
+    # Resolve the full path to the SQL file
+    sql_file_path = custom_sql_dir / file_name
+
+    # Check if the SQL file exists
+    if not sql_file_path.exists():
+        raise FileNotFoundError(f"SQL file '{file_name}' not found in '{custom_sql_dir}'.")
+
+    # Read and return the content of the SQL file
+    return sql_file_path.read_text(encoding='utf-8')
