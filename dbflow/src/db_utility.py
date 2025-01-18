@@ -1183,7 +1183,8 @@ def create_sql(sql_file, replacements=None, write_sql=True):
 
     # Optionally write the executed SQL to a temporary directory
     if write_sql:
-        executed_dir = Path('./_sql_executed')
+        # Place `_sql_executed` one level up from the current script
+        executed_dir = Path(__file__).resolve().parent.parent / '_sql_executed'
         executed_dir.mkdir(parents=True, exist_ok=True)
         executed_file_path = executed_dir / sql_file
         executed_file_path.write_text(sql, encoding='utf-8')
