@@ -58,6 +58,11 @@ my_application/
 │   │   ├── custom_query.sql
 │   │   ├── example_schema.sql
 ├── main.py                 # Application entry point
+
+
+```
+#### **Application Directory (`dbflow/`)**
+```plaintext
 ├── dbflow/                 # Installed dbflow module
 │   ├── src/                # Core logic of dbflow
 │   │   ├── db_sqlalchemy.py  # Core SQLAlchemy-related utilities
@@ -70,7 +75,6 @@ my_application/
 │   ├── db_structure.py
 │   ├── sql/
 │   │   ├── example_query.sql
-
 
 ```
 
@@ -85,8 +89,9 @@ Edit `config.ini` in the `dbflow` module to point to the copied `custom` folder 
 
 ```ini
 [paths]
-custom_sql_dir = ./my_application/custom/sql
-custom_db_structure = ./my_application/custom/db_structure.py
+custom_sql_dir = ./custom/sql
+custom_db_structure = ./custom/db_structure.py
+executed_sql_dir = ../_sql_executed
 ```
 
 ### Default Behavior
