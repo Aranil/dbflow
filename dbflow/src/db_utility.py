@@ -1183,8 +1183,12 @@ def create_sql(sql_file, replacements=None, write_sql=True):
 
     # Optionally write the executed SQL to a temporary directory
     if write_sql:
-        app_root = Path(os.getcwd())  # Base the path on the current working directory
-        executed_dir = app_root / '_sql_executed'
+        #app_root = Path(os.getcwd())  # Base the path on the current working directory
+        #executed_dir = app_root.parent / '_sql_executed'
+
+        paths = get_custom_paths()
+        executed_dir = Path(paths.get('executed_sql_dir', './_sql_executed')).resolve()
+
         executed_dir.mkdir(parents=True, exist_ok=True)
 
         executed_file_path = executed_dir / sql_file
