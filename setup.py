@@ -27,6 +27,7 @@ setup(
     python_requires='>=3.10',
     install_requires=[
         "geopandas",
+        "SQLAlchemy"
         #"python-decouple",
         #"rasterio",
         #"fiona",
@@ -49,3 +50,4 @@ setup(
 # pip install git+ssh://git@github.com/your-user/your-private-repo.git
 
 # TODO: tests, logfiles!!! example for db_structure.py !!!
+# TODO: clean up the additional module
