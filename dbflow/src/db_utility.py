@@ -948,55 +948,61 @@ def connect2db(path):
 
 def create_sql(sql_file='main_query_datatypes_barchart.sql', replacements=None, write_sql=True):
     """
-    Copies the static resource file to the newly created project.
-    Sets values into SQL query - to make the SQL dynamic
+    Dynamically loads an SQL file and replaces placeholders with dynamic values.
 
-    Source: https://programtalk.com/python-examples/pkg_resources.resource_string.decode/
-            https://programtalk.com/python-how-to/create_static_file/
+    Parameters
+    ----------
+    sql_file : str
+        Name of the SQL file to load.
+    replacements : dict
+        Dictionary of placeholders (keys) and their replacement values (values).
+    write_sql : bool
+        If True, writes the rendered SQL query to the '_sql_executed' directory.
 
-    sql_file: str
-        sql file containing SQL query
-    replacements: dict
-        key -> sql placeholder (in SQL(-ite) Syntax);
-        value -> dynamic variable (in python syntax)
-        examp:    replacements = {
-                                      ':datatype_code': datatype_code_choice
-                                    , ':datatype_name': datatype_name_choice
-                                    , ':variable': variable_choice
-                                }
-    write_sql: boolean
-        if True - writes SQL query in .sql file into directory '_sql_executed'
-
-    Returns:
+    Returns
     -------
-        str
-        static resource: SQL query to be placed in python code
+    str
+        The rendered SQL query as a string.
     """
-    # logger.info('Directory of the SQL files: {}'.format(db_utils.sql.__file__))
+    # Directories to search for the SQL file
+    project_root = Path(__file__).parent.resolve().parent.parent
+    base_dirs = [
+        project_root / 'custom/sql',
+        project_root / 'custom_template/sql',
+    ]
 
-    res_file = pkg_resources.resource_string('dbflow.sql', sql_file).decode('utf-8')
+    print(f"Looking for '{sql_file}' in the following directories:")
+    for base_dir in base_dirs:
+        print(base_dir.resolve())
 
+    # Attempt to load the SQL file
+    res_file = None
+    for base_dir in base_dirs:
+        sql_file_path = base_dir / sql_file
+        if sql_file_path.exists():
+            res_file = sql_file_path.read_text(encoding='utf-8')
+            break
+
+    if res_file is None:
+        available_files = {str(dir): [f.name for f in dir.glob('*.sql')] for dir in base_dirs if dir.exists()}
+        raise FileNotFoundError(
+            f"SQL file '{sql_file}' not found in any of the following directories: {', '.join(map(str, base_dirs))}. "
+            f"Available files: {available_files}"
+        )
+
+    # Replace placeholders with dynamic values
     if replacements is not None:
         for placeholder, value in replacements.items():
             res_file = res_file.replace(placeholder, value)
 
+    # Write the rendered SQL query to '_sql_executed'
     if write_sql:
-        '''
-        f_dir = Path(db_utils.sql.__file__).parent.parent.parent.parent.joinpath('_sql_executed')
-        logger.info('Directory of the temporary SQL files: {}'.format(f_dir.as_posix()))
-        try:
-            f_dir.mkdir(parents=True, exist_ok=False)
-        except FileExistsError:
-            print("'_sql_executed' folder is already there")
-        else:
-            print("'_sql_executed' folder was created")
-        '''
+        executed_sql_dir = Path('./_sql_executed')
+        executed_sql_dir.mkdir(parents=True, exist_ok=True)
 
-        f_dir = generate_internal_temp_folder(folder_name='_sql_executed')
+        executed_file_path = executed_sql_dir / sql_file
+        executed_file_path.write_text(res_file, encoding='utf-8')
 
-        f = open(f_dir.joinpath(sql_file).as_posix(), 'w')
-        f.write(res_file)
-        f.close()
     return res_file
 
 
