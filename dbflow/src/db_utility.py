@@ -1140,8 +1140,8 @@ def get_custom_paths():
 
     # Default paths (fall back to dbflow's custom_template if config.ini is missing)
     default_paths = {
-        'custom_sql_dir': Path(__file__).resolve().parent.parent / 'custom_template/sql',
-        'custom_db_structure': Path(__file__).resolve().parent.parent / 'custom_template/db_structure.py',
+        'custom_sql_dir': Path(__file__).resolve().parent.parent.parent / 'custom_template/sql',
+        'custom_db_structure': Path(__file__).resolve().parent.parent.parent / 'custom_template/db_structure.py',
     }
 
     if not config_path.exists():
@@ -1186,7 +1186,7 @@ def create_sql(sql_file, replacements=None, write_sql=True):
         #app_root = Path(os.getcwd())  # Base the path on the current working directory
         #executed_dir = app_root.parent / '_sql_executed'
 
-        paths = get_custom_paths()
+        paths = get_custom_paths() # make it customizable for a user, define the path in .ini file
         executed_dir = Path(paths.get('executed_sql_dir', '../_sql_executed')).resolve()
 
         executed_dir.mkdir(parents=True, exist_ok=True)
