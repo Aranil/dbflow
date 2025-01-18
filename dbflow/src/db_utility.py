@@ -877,7 +877,7 @@ class RCMArchive:
     '''
 
 
-def tables_to_create():
+def tables_to_create_():
     """
     Dynamically retrieve all table classes from db_structure
 
@@ -926,6 +926,44 @@ def tables_to_create():
         print('ERROR: No tables found to create!')
 
     return tables
+
+def tables_to_create():
+    """
+    Dynamically retrieve all table classes from db_structure.
+
+    Returns
+    -------
+    list
+        List of SQLAlchemy table objects to be created.
+    """
+    tables = []
+
+    # Load the db_structure module dynamically
+    db_structure_module = load_custom_structure()
+    if not db_structure_module:
+        print('ERROR: No db_structure module found! Falling back to default.')
+        return tables
+
+    # Iterate over classes in the db_structure module
+    for name, cls in inspect.getmembers(db_structure_module, inspect.isclass):
+        logger.info(f"Class Name: {name}, Class: {cls}")
+        logger.info(f"Class Module: {cls.__module__}")
+
+        # Check if the class belongs to the loaded db_structure module
+        if cls.__module__ == db_structure_module.__name__:
+            # Safely get the table associated with the class, if it exists
+            if hasattr(cls, '__table__'):
+                print(f"Table for {name}: {cls.__table__}")
+                tables.append(cls.__table__)
+            else:
+                print(f"Class {name} does not have a __table__ attribute")
+
+    # Handle case where no tables are found
+    if len(tables) == 0:
+        print('ERROR: No tables found to create!')
+
+    return tables
+
 
 
 def connect2db(path):
@@ -1162,17 +1200,24 @@ def load_custom_structure():
     module or None
         The loaded custom db_structure module, or None if the file does not exist.
     """
+    # Resolve custom paths
     paths = get_custom_paths()
-    custom_db_structure_path = paths['custom_db_structure']
+    custom_db_structure_path = Path(paths['custom_db_structure']).resolve()
 
     # Check if the custom db_structure.py exists
-    if os.path.exists(custom_db_structure_path):
-        spec = importlib.util.spec_from_file_location("custom.db_structure", custom_db_structure_path)
-        custom_module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(custom_module)
-        return custom_module
+    if custom_db_structure_path.exists():
+        try:
+            # Load the module dynamically
+            spec = importlib.util.spec_from_file_location("custom.db_structure", str(custom_db_structure_path))
+            custom_module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(custom_module)
+            print(f"Loaded custom db_structure.py from {custom_db_structure_path}")
+            return custom_module
+        except Exception as e:
+            print(f"Error loading custom db_structure.py: {e}")
+            return None
     else:
-        print(f"Custom db_structure.py not found. Using default behavior.")
+        print(f"Custom db_structure.py not found at {custom_db_structure_path}. Using default behavior.")
         return None
 
 
