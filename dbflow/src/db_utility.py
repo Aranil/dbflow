@@ -946,7 +946,7 @@ def connect2db(path):
     return RCMArchive(db_path.as_posix())
 
 
-def create_sql(sql_file='main_query_datatypes_barchart.sql', replacements=None, write_sql=True):
+def create_sql_(sql_file='main_query_datatypes_barchart.sql', replacements=None, write_sql=True):
     """
     Dynamically loads an SQL file and replaces placeholders with dynamic values.
 
@@ -1088,33 +1088,69 @@ import importlib.util
 
 def get_custom_paths():
     """
-    Reads custom paths from the config.ini file and provides fallback paths
-    if the configuration is missing or invalid.
+    Reads custom paths from the config.ini file in the application root.
+    Falls back to default paths in the dbflow package if config.ini is not found.
 
     Returns
     -------
     dict
         A dictionary containing paths for custom SQL and database structure.
     """
+    # Locate config.ini in the current working directory
+    app_root = Path.cwd()
+    config_path = app_root / 'config.ini'
+
+    # Default paths (fall back to dbflow's custom_template if config.ini is missing)
+    default_paths = {
+        'custom_sql_dir': Path(__file__).resolve().parent.parent / 'custom_template/sql',
+        'custom_db_structure': Path(__file__).resolve().parent.parent / 'custom_template/db_structure.py',
+    }
+
+    if not config_path.exists():
+        print("Config file not found in the application directory. Using default paths.")
+        return default_paths
+
+    # Read config.ini
     config = configparser.ConfigParser()
-    config_path = os.path.join(os.path.dirname(__file__), '../../config.ini')
-
-    # Check if the config.ini file exists
-    if not os.path.exists(config_path):
-        print("Config file not found. Falling back to default paths.")
-        return {
-            'custom_sql_dir': './custom_template/sql',
-            'custom_db_structure': './custom_template/db_structure.py'
-        }
-
-    # Read the configuration file
     config.read(config_path)
 
-    # Get paths with fallbacks
     return {
-        'custom_sql_dir': config.get('paths', 'custom_sql_dir', fallback='./custom_template/sql'),
-        'custom_db_structure': config.get('paths', 'custom_db_structure', fallback='./custom_template/db_structure.py'),
+        'custom_sql_dir': Path(config.get('paths', 'custom_sql_dir', fallback=str(default_paths['custom_sql_dir']))).resolve(),
+        'custom_db_structure': Path(config.get('paths', 'custom_db_structure', fallback=str(default_paths['custom_db_structure']))).resolve(),
     }
+
+
+def create_sql(sql_file, replacements=None, write_sql=True):
+    """
+    Dynamically loads an SQL file and replaces placeholders with dynamic values.
+    """
+    paths = get_custom_paths()
+    custom_sql_dir = paths['custom_sql_dir']
+
+    # Resolve the full path to the SQL file
+    sql_file_path = custom_sql_dir / sql_file
+
+    if not sql_file_path.exists():
+        available_files = [f.name for f in custom_sql_dir.glob('*.sql')]
+        raise FileNotFoundError(
+            f"SQL file '{sql_file}' not found in directory: {custom_sql_dir}. "
+            f"Available files: {available_files}"
+        )
+
+    # Read and replace placeholders
+    sql = sql_file_path.read_text(encoding='utf-8')
+    if replacements:
+        for placeholder, value in replacements.items():
+            sql = sql.replace(placeholder, value)
+
+    # Optionally write the executed SQL to a temporary directory
+    if write_sql:
+        executed_dir = Path('./_sql_executed')
+        executed_dir.mkdir(parents=True, exist_ok=True)
+        executed_file_path = executed_dir / sql_file
+        executed_file_path.write_text(sql, encoding='utf-8')
+
+    return sql
 
 
 def load_custom_structure():
@@ -1172,3 +1208,5 @@ def load_sql_file(file_name):
 
     # Read and return the content of the SQL file
     return sql_file_path.read_text(encoding='utf-8')
+
+
