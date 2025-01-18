@@ -1183,16 +1183,9 @@ def create_sql(sql_file, replacements=None, write_sql=True):
 
     # Optionally write the executed SQL to a temporary directory
     if write_sql:
-        app_root = Path(__file__).resolve().parent  # `my_application` directory
-        executed_dir = app_root.parent / '_sql_executed'  # One level above `my_application`
-
-        print(f"Attempting to create directory: {executed_dir}")
-
-        try:
-            executed_dir.mkdir(parents=True, exist_ok=True)
-            print(f"Directory successfully created: {executed_dir}")
-        except Exception as e:
-            raise Exception(f"Failed to create directory `{executed_dir}`: {e}")
+        app_root = Path(os.getcwd())  # Base the path on the current working directory
+        executed_dir = app_root / '_sql_executed'
+        executed_dir.mkdir(parents=True, exist_ok=True)
 
         executed_file_path = executed_dir / sql_file
         executed_file_path.write_text(sql, encoding='utf-8')
