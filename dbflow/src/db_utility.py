@@ -1136,7 +1136,8 @@ def get_custom_paths():
     """
     # Locate config.ini in the current working directory
     app_root = Path.cwd()
-    config_path = app_root / 'config.ini'
+    config_path = app_root.parent / 'config.ini'
+    print(config_path)
 
     # Default paths (fall back to dbflow's custom_template if config.ini is missing)
     default_paths = {
