@@ -102,10 +102,7 @@ class RCMArchive:
 
     def attach_sqlalchemy_spatialite_listener(self):
         """
-
-        this is required to link to the spatialite CLL at each connection with external DB. To be able to perform
-        geografical operations such as ST_Transform
-
+        Ensures that the SpatiaLite extension is properly linked at each SQLAlchemy connection.
         """
         conda_env_path = os.environ.get('CONDA_PREFIX')
         spatialite_path = os.path.join(conda_env_path, 'Library', 'bin', 'mod_spatialite.dll')
@@ -113,10 +110,24 @@ class RCMArchive:
         @event.listens_for(self.archive.engine, "connect")
         def load_spatialite_extension(dbapi_connection, connection_record):
             try:
-                ctypes.CDLL(spatialite_path)
+                # Ensure the extension is loaded for the SQLAlchemy connection
                 dbapi_connection.enable_load_extension(True)
                 dbapi_connection.load_extension(spatialite_path)
                 logger.info("SpatiaLite extension loaded for SQLAlchemy connection.")
+
+                # Verify spatial metadata exists
+                cursor = dbapi_connection.cursor()
+                cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='geometry_columns';")
+                exists = cursor.fetchone()
+
+                if not exists:
+                    logger.info("Spatial metadata missing in SQLAlchemy session. Initializing...")
+                    cursor.execute("SELECT InitSpatialMetaData(1);")
+                    dbapi_connection.commit()
+                    logger.info("SpatiaLite metadata initialized successfully for SQLAlchemy session.")
+
+                cursor.close()
+
             except Exception as e:
                 logger.error(f"Failed to load SpatiaLite for SQLAlchemy: {e}")
                 raise e
