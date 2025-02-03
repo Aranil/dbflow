@@ -8,26 +8,22 @@ Additional Info:
 # https://stackoverflow.com/questions/58668255/is-there-an-example-sqlalchemy-userdefinedtype-for-microsoft-sql-server-geograph
 
 """
-
 from sqlalchemy import Column, Integer, String, DateTime, Float, Boolean, BLOB  # datentypen table columns
-#from geoalchemy2 import Geometry, WKTElement  # tabelle mit geometrien
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.types import UserDefinedType
-#from geoalchemy2 import func
 from sqlalchemy import func
-from dateutil.parser import parse
 import numpy as np
-from shapely.geometry.polygon import Polygon
-from shapely.geometry.multipolygon import MultiPolygon
-import shapely
-from shapely import wkt
-import sys
 import pandas as pd
 from dateutil.parser import parse, ParserError
-
 from shapely.geometry import Polygon, MultiPolygon, Point
+import shapely
+from shapely import wkt
 from geoalchemy2.shape import from_shape
 
+import logging
+
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def convert_3D_2D(p):
@@ -80,7 +76,6 @@ class Geometry2(UserDefinedType):
         #return '%s(%s, %d)' % (self.name, self.geometry_type, self.srid)
 
 
-
     def bind_expression(self, bindvalue, srid):
         """Converts input geometry (WKT string, Point, Polygon, MultiPolygon) to SQLAlchemy Geometry format.
 
@@ -90,10 +85,10 @@ class Geometry2(UserDefinedType):
         # Convert WKT string to Shapely geometry if needed
         if isinstance(bindvalue, str):
             geometry = wkt.loads(bindvalue)
-            print('Converted from WKT:', type(geometry))
+            #print('Converted from WKT:', type(geometry))
         elif isinstance(bindvalue, (Point, Polygon, MultiPolygon)):
             geometry = bindvalue
-            print(f'Converted from {type(bindvalue).__name__}:', type(geometry))
+            #print(f'Converted from {type(bindvalue).__name__}:', type(geometry))
         else:
             raise TypeError(f"Invalid type: {type(bindvalue)}. Expected WKT string, Point, Polygon, or MultiPolygon.")
 
@@ -112,7 +107,6 @@ class Geometry2(UserDefinedType):
             #### return func.ST_GeomFromText(bindvalue, type_=self) # to import WKT without SRID (in this case srid=0 => not defined)
         #    # Standard case: return as EWKT with SRID
         #    return func.ST_GeomFromEWKT(f"SRID={srid};{bindval.wkt}", type_=self)
-
 
 
     def column_expression(self, col):
@@ -158,8 +152,9 @@ def sqldat_converter(x, to='datetime'):
             raise ValueError("Invalid conversion type specified. Use 'datetime', 'date', or 'time'.")
     except ParserError as e:
         # Return None or log a message if date format is invalid
-        print(f"ParserError: Invalid date format for input {x}")
+        logger.error(f"ParserError: Invalid date format for input {x}")
         return None
+
 
 def sqldat_converter_(x, to='datetime'):
     if (x == 'nan') or (x == 'NaN') or (x == np.nan):
