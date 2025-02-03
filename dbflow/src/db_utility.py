@@ -6,7 +6,6 @@ Setup for a database
 """
 import importlib
 import inspect
-import os
 import sqlite3
 import pkg_resources
 import pandas as pd
@@ -21,35 +20,21 @@ from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Table
 import sqlalchemy
-import ctypes
 from sqlalchemy import event
 from typing import Union, Dict, List
+import configparser
+import os
+import importlib.util
 
 import custom_template
-
-# from shapely.geometry import Point
-# from shapely.wkt import loads
-# from shapely import ops
-# from shapely.geometry import LineString
-
-
-# from archive.knowledge import phenodata_codes
-# from archive.loadwd import get_pheno_station, loadpheno, get_wd_station, loadwd, query_wd_data
-# from archive.s2_utils import get_metadata, get_product_id, download_from_sentinelsat
-# from archive import s1_utils
-
-
-
 from pathlib import Path
+
 import logging
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-
-# Replace print statements
-# logger.info(f"Set PROJ_LIB to: {os.environ['PROJ_LIB']}")
-# logger.info("Current PROJ_LIB environment variable:", os.environ.get('PROJ_LIB'))
 
 
 class RCMArchive:
@@ -158,7 +143,7 @@ class RCMArchive:
             self.archive.meta.reflect(bind=self.archive.engine)
             logger.info("Database schema reflected successfully.")
         except Exception as e:
-            print(f"Failed to reflect database schema: {e}")
+            logger.error(f"Failed to reflect database schema: {e}")
 
 
     def add_tables(self, tables):
@@ -312,7 +297,7 @@ class RCMArchive:
         # tables = self.archive.get_tablenames(return_all=True)
         tables = self.archive.get_tablenames()
         if table not in tables:
-            print(f'Table {table} does not exist in the database {self.archive.dbfile}.')
+            logger.info(f'Table {table} does not exist in the database {self.archive.dbfile}.')
             return False
         return True
 
@@ -345,7 +330,7 @@ class RCMArchive:
 
         # Return True if no rows were found, False otherwise
         if result is None:
-            print(f'Table {table} is empty!')
+            logger.info(f'Table {table} is empty!')
             return True
         return False
 
@@ -690,34 +675,34 @@ class RCMArchive:
         """
         # Verify if table exists
         if not self.check_table_exists(table):
-            print(f"Table '{table}' does not exist.")
+            logger.info(f"Table '{table}' does not exist.")
             return None
 
         # Retrieve column names
         col_names = self.archive.get_colnames(table)
         arg_invalid = [x for x in args.keys() if x not in col_names]
         if arg_invalid:
-            print(f"Following arguments {', '.join(arg_invalid)} were not ingested in table '{table}'.")
+            logger.info(f"Following arguments {', '.join(arg_invalid)} were not ingested in table '{table}'.")
 
         # Validate and adjust input values
         for key, value in args.items():
             if key == 'parameter_value':  # Modify this to match your column name
                 if value is None:
-                    print(f"{key} is None, setting to default -999.")
+                    logger.info(f"{key} is None, setting to default -999.")
                     value = -999
                 else:
                     try:
                         value = float(value)
                     except ValueError:
-                        print(f"Invalid float for {key}: {value}, setting to -999.")
+                        logger.info(f"Invalid float for {key}: {value}, setting to -999.")
                         value = -999
                 args[key] = value  # Update with validated value
 
         # Generate insert statement
         stmt = self.archive.meta.tables[table].insert().values(**args)
         compiled_statement = stmt.compile(dialect=sqlite.dialect())
-        print(f"Compiled statement: {compiled_statement}")
-        print(f"Bind parameters: {compiled_statement.params}")
+        #print(f"Compiled statement: {compiled_statement}")
+        #print(f"Bind parameters: {compiled_statement.params}")
         return stmt
 
 
@@ -745,14 +730,14 @@ class RCMArchive:
         """
         # Verify if table exists
         if not self.check_table_exists(table):
-            print(f"Table '{table}' does not exist.")
+            logger.info(f"Table '{table}' does not exist.")
             return None
 
         # Retrieve and validate column names
         col_names = self.archive.get_colnames(table)
         arg_invalid = [x for x in args.keys() if x not in col_names]
         if arg_invalid:
-            print(f"Following arguments {', '.join(arg_invalid)} were not ingested in table '{table}'.")
+            logger.info(f"Following arguments {', '.join(arg_invalid)} were not ingested in table '{table}'.")
 
         # Create an insert statement
         insert_stmt = self.archive.meta.tables[table].insert().values(**args)
@@ -767,8 +752,8 @@ class RCMArchive:
         stmt = " ".join([compiled_statement.string, upsert_stmt])
         stmt = text(stmt).bindparams(**params)
 
-        print(f"Upsert statement: {stmt}")
-        print(f"Parameters: {params}")
+        #print(f"Upsert statement: {stmt}")
+        #print(f"Parameters: {params}")
         return stmt
 
 
@@ -798,15 +783,15 @@ class RCMArchive:
             session.commit()  # Commit all changes at once
         except Exception as e:
             session.rollback()  # Rollback in case of error
-            print(f"Error during insertion: {e}")
+            logger.info(f"Error during insertion: {e}")
         finally:
             session.close()  # Always close the session
 
         message = f'Ingested {len(orderly_data) - len(rejected)} entries to table {table}'
         if rejected:
-            print(f'Rejected entries with already existing primary key: {rejected}')
+            logger.info(f'Rejected entries with already existing primary key: {rejected}')
             message += f', rejected {len(rejected)} (already existing).'
-        print(message)
+        logger.info(message)
 
 
     '''
@@ -915,7 +900,7 @@ def tables_to_create_():
     try:
         db_structure_module = importlib.import_module('dbflow.db_structure')
     except ModuleNotFoundError as e:
-        print(f"Module not found: {e}")
+        logger.warning(f"Module not found: {e}")
         return tables
 
     # Add tables from the db_structure module
@@ -927,16 +912,17 @@ def tables_to_create_():
         if cls.__module__ == 'dbflow.db_structure':
             # Safely get the table associated with the class, if it exists
             if hasattr(cls, '__table__'):
-                print(f"Table for {name}: {cls.__table__}")
+                logger.info(f"Table for {name}: {cls.__table__}")
                 tables.append(cls.__table__)
             else:
-                print(f"Class {name} does not have a __table__ attribute")
+                logger.warning(f"Class {name} does not have a __table__ attribute")
 
     # Handle case where no tables are found
     if len(tables) == 0:
-        print('ERROR: No tables found to create!')
+        logger.warning('ERROR: No tables found to create!')
 
     return tables
+
 
 def tables_to_create():
     """
@@ -952,7 +938,7 @@ def tables_to_create():
     # Load the db_structure module dynamically
     db_structure_module = load_custom_structure()
     if not db_structure_module:
-        print('ERROR: No db_structure module found! Falling back to default.')
+        logger.warning('ERROR: No db_structure module found! Falling back to default.')
         return tables
 
     # Iterate over classes in the db_structure module
@@ -964,14 +950,14 @@ def tables_to_create():
         if cls.__module__ == db_structure_module.__name__:
             # Safely get the table associated with the class, if it exists
             if hasattr(cls, '__table__'):
-                print(f"Table for {name}: {cls.__table__}")
+                logger.info(f"Table for {name}: {cls.__table__}")
                 tables.append(cls.__table__)
             else:
-                print(f"Class {name} does not have a __table__ attribute")
+                logger.warning(f"Class {name} does not have a __table__ attribute")
 
     # Handle case where no tables are found
     if len(tables) == 0:
-        print('ERROR: No tables found to create!')
+        logger.warning('ERROR: No tables found to create!')
 
     return tables
 
@@ -1020,9 +1006,9 @@ def create_sql_(sql_file='main_query_datatypes_barchart.sql', replacements=None,
         project_root / 'custom_template/sql',
     ]
 
-    print(f"Looking for '{sql_file}' in the following directories:")
+    logger.info(f"Looking for '{sql_file}' in the following directories:")
     for base_dir in base_dirs:
-        print(base_dir.resolve())
+        logger.info(base_dir.resolve())
 
     # Attempt to load the SQL file
     res_file = None
@@ -1060,9 +1046,9 @@ def generate_internal_temp_folder(folder_name):
     try:
         f_dir.mkdir(parents=True, exist_ok=False)
     except FileExistsError:
-        print("'{}' folder is already there".format(folder_name))
+        logger.info("'{}' folder is already there".format(folder_name))
     else:
-        print("'{}' folder was created".format(folder_name))
+        logger.info("'{}' folder was created".format(folder_name))
     return f_dir
 
 
@@ -1122,7 +1108,7 @@ def query_sql(sql, db_engine):
         data = pd.read_sql(sql, db_engine)
 
         if data.empty:
-            logger.info('Query returned empty! Table is empty or SQL query is incorrect.')
+            logger.warning('Query returned empty! Table is empty or SQL query is incorrect.')
         return data
 
     except Exception as e:
@@ -1130,10 +1116,6 @@ def query_sql(sql, db_engine):
         raise
 
 
-
-import configparser
-import os
-import importlib.util
 
 def get_custom_paths():
     """
@@ -1148,7 +1130,7 @@ def get_custom_paths():
     # Locate config.ini in the current working directory
     app_root = Path.cwd()
     config_path = app_root.parent / 'config.ini'
-    print(config_path)
+    logger.info(config_path)
 
     # Default paths (fall back to dbflow's custom_template if config.ini is missing)
     default_paths = {
@@ -1157,7 +1139,7 @@ def get_custom_paths():
     }
 
     if not config_path.exists():
-        print("Config file not found in the application directory. Using default paths.")
+        logger.warning("Config file not found in the application directory. Using default paths.")
         return default_paths
 
     # Read config.ini
@@ -1229,13 +1211,13 @@ def load_custom_structure():
             spec = importlib.util.spec_from_file_location("custom.db_structure", str(custom_db_structure_path))
             custom_module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(custom_module)
-            print(f"Loaded custom db_structure.py from {custom_db_structure_path}")
+            logger.info(f"Loaded custom db_structure.py from {custom_db_structure_path}")
             return custom_module
         except Exception as e:
-            print(f"Error loading custom db_structure.py: {e}")
+            logger.warning(f"Error loading custom db_structure.py: {e}")
             return None
     else:
-        print(f"Custom db_structure.py not found at {custom_db_structure_path}. Using default behavior.")
+        logger.info(f"Custom db_structure.py not found at {custom_db_structure_path}. Using default behavior.")
         return None
 
 
