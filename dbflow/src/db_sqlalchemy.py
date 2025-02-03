@@ -26,6 +26,8 @@ import pandas as pd
 from dateutil.parser import parse, ParserError
 
 from shapely.geometry import Polygon, MultiPolygon, Point
+from geoalchemy2.shape import from_shape
+
 
 
 def convert_3D_2D(p):
@@ -35,12 +37,14 @@ def convert_3D_2D(p):
 
     '''
 
+
 def _to_2d(x, y, z):
     """
     functionality to drop 3rd dimension
     """
     # Source: https://github.com/Toblerity/Shapely/issues/709
     return tuple(filter(None, [x, y]))
+
 
 class Geometry2(UserDefinedType):
     """
@@ -70,62 +74,46 @@ class Geometry2(UserDefinedType):
     def __init__(self, srid=4326):
         self.srid = srid
 
+
     def get_col_spec(self):
         return 'GEOMETRY'
         #return '%s(%s, %d)' % (self.name, self.geometry_type, self.srid)
 
-    def bind_expression_(self, bindvalue):
-        ## convert str wkt to  <class 'shapely.geometry.polygon.Polygon'>
-        if isinstance(bindvalue, str):
-            bindval = shapely.wkt.loads(bindvalue)
-            #print('bindval: ', type(bindval))
-        elif (isinstance(bindvalue, shapely.geometry.polygon.Polygon)):
-            bindval = bindvalue
-            print('bindval geom_polygon: ', type(bindval))
-            print(bindval.wkt)
-            print(type(bindval.wkt))
-        elif (isinstance(bindvalue, shapely.geometry.point.Point)):
-            bindval = bindvalue
-            print('bindval geom_polygon: ', type(bindval))
-            print(bindval.wkt)
-            print(type(bindval.wkt))
-        else:
-            print(type(bindvalue))
-            raise IOError('Shape is not a shapely type of polygon.')
 
 
-            # import to db only as 2D geometry allowed,
-        # if POLYGON Z .. (3D geometry) exist this will convert to POLYGON ... (2D geometry) => https://github.com/Toblerity/Shapely/issues/709
-        if bindval.has_z:
-            return func.ST_GeomFromEWKT('SRID=%d;%s' % (self.srid, shapely.ops.transform(_to_2d, bindval)), type_=self)
-            #return func.ST_GeomFromEWKT('SRID=%d;%s' % (self.srid, shapely.ops.transform(_to_2d, bindval.wkt)), type_=self)
-        else:
-            # wrapper used during the data input into DB, value will be wrapped into some spatial database function (func.ST_GeomFromText)
-            #return func.ST_GeomFromText(bindvalue, type_=self) # to import WKT without SRID (in this case srid=0 => not defined)
-            return func.ST_GeomFromEWKT('SRID=%d;%s' % (self.srid, bindval.wkt), type_=self)
+    def bind_expression(self, bindvalue, srid):
+        """Converts input geometry (WKT string, Point, Polygon, MultiPolygon) to SQLAlchemy Geometry format.
 
-    def bind_expression(self, bindvalue):
+        Handles 3D -> 2D conversion if necessary and applies the correct spatial database function.
+        """
+
         # Convert WKT string to Shapely geometry if needed
         if isinstance(bindvalue, str):
-            bindval = wkt.loads(bindvalue)
-            #print('bindval from WKT:', type(bindval))
-        elif isinstance(bindvalue, Polygon):
-            bindval = bindvalue.wkt
-            print('bindval Polygon:', type(bindval))
-            #print(bindval.wkt)
-        elif isinstance(bindvalue, MultiPolygon):
-            bindval = bindvalue.wkt
-            print('bindval MultiPolygon:', type(bindval))
-            #print(bindval.wkt)
-        elif isinstance(bindvalue, Point):
-            bindval = bindvalue.wkt
-            print('bindval Point:', type(bindval))
-            #print(bindval.wkt)
+            geometry = wkt.loads(bindvalue)
+            print('Converted from WKT:', type(geometry))
+        elif isinstance(bindvalue, (Point, Polygon, MultiPolygon)):
+            geometry = bindvalue
+            print(f'Converted from {type(bindvalue).__name__}:', type(geometry))
         else:
-            #print('Invalid type:', type(bindvalue))
-            raise IOError('Shape is not a supported Shapely geometry type (Polygon, MultiPolygon, or Point).')
+            raise TypeError(f"Invalid type: {type(bindvalue)}. Expected WKT string, Point, Polygon, or MultiPolygon.")
 
+
+        # Convert Shapely geometry to SQLAlchemy Geometry type
+        bindval = from_shape(geometry, srid=srid)
         return bindval
+
+        # Handle 3D geometries (convert to 2D if necessary)
+        #if hasattr(bindval, "has_z") and bindval.has_z:
+        #    transformed_geom = shapely.ops.transform(_to_2d, bindval)
+        #    return func.ST_GeomFromEWKT(f"SRID={srid};{transformed_geom.wkt}", type_=self)
+            #### return func.ST_GeomFromEWKT('SRID=%d;%s' % (self.srid, shapely.ops.transform(_to_2d, bindval.wkt)), type_=self)
+        #else:
+            #### wrapper used during the data input into DB, value will be wrapped into some spatial database function (func.ST_GeomFromText)
+            #### return func.ST_GeomFromText(bindvalue, type_=self) # to import WKT without SRID (in this case srid=0 => not defined)
+        #    # Standard case: return as EWKT with SRID
+        #    return func.ST_GeomFromEWKT(f"SRID={srid};{bindval.wkt}", type_=self)
+
+
 
     def column_expression(self, col):
         #  wrapper, used during SELECT statement
