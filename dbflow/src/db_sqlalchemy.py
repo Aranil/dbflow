@@ -108,21 +108,21 @@ class Geometry2(UserDefinedType):
         # Convert WKT string to Shapely geometry if needed
         if isinstance(bindvalue, str):
             bindval = wkt.loads(bindvalue)
-            print('bindval from WKT:', type(bindval))
+            #print('bindval from WKT:', type(bindval))
         elif isinstance(bindvalue, Polygon):
-            bindval = bindvalue
+            bindval = bindvalue.wkt
             print('bindval Polygon:', type(bindval))
-            print(bindval.wkt)
+            #print(bindval.wkt)
         elif isinstance(bindvalue, MultiPolygon):
-            bindval = bindvalue
+            bindval = bindvalue.wkt
             print('bindval MultiPolygon:', type(bindval))
-            print(bindval.wkt)
+            #print(bindval.wkt)
         elif isinstance(bindvalue, Point):
-            bindval = bindvalue
+            bindval = bindvalue.wkt
             print('bindval Point:', type(bindval))
-            print(bindval.wkt)
+            #print(bindval.wkt)
         else:
-            print('Invalid type:', type(bindvalue))
+            #print('Invalid type:', type(bindvalue))
             raise IOError('Shape is not a supported Shapely geometry type (Polygon, MultiPolygon, or Point).')
 
         return bindval
