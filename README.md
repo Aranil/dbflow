@@ -9,7 +9,6 @@ To install required packages in conda env
 
 run conda env create -f environment.yml 
 
-customized .sql files in folder sql - contact @Aranil to add to your module if required
 
 
 ## Customizable SQL Folder and `db_structure.py`
@@ -89,8 +88,8 @@ Edit `config.ini` in the `dbflow` module to point to the copied `custom` folder 
 
 ```ini
 [paths]
-custom_sql_dir = ./custom/sql
-custom_db_structure = ./custom/db_structure.py
+custom_sql_dir = ../custom/sql
+custom_db_structure = ../custom/db_structure.py
 executed_sql_dir = ../_sql_executed
 ```
 
@@ -183,3 +182,5 @@ relationships, primary_keys = get_table_relationships(conn=conn, excluded_prefix
 # Plot the relationships
 plot_relationship_graph(relationships, primary_keys, group_colors={"users": "blue", "orders": "green"})
 ```
+
+Contributors: [Markus Zehner](https://github.com/MarkusZehner/)
