@@ -28,15 +28,6 @@ setup(
     install_requires=[
         "geopandas",
         "SQLAlchemy"
-        #"python-decouple",
-        #"rasterio",
-        #"fiona",
-        #"py7zr",
-        #"scikit-image",
-        #"opencv-python",
-        #"seaborn",
-        #"zarr",
-        #"cartopy"
     ],
 )
 
@@ -49,5 +40,5 @@ setup(
 # run to install package
 # pip install git+ssh://git@github.com/your-user/your-private-repo.git
 
-# TODO: tests, logfiles!!! example for db_structure.py !!!
+# TODO: tests, logfiles!!!
 # TODO: clean up the additional module
