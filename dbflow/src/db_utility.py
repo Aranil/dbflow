@@ -1119,30 +1119,41 @@ def query_sql(sql, db_engine):
 
 def get_custom_paths():
     """
-    Reads custom paths from the config.ini file located inside the dbflow package.
-    Falls back to default paths if config.ini is not found.
+    Searches for config.ini in multiple directory levels (app directory and parents).
+    Falls back to default paths in the dbflow package if config.ini is not found.
 
     Returns
     -------
     dict
         A dictionary containing paths for custom SQL and database structure.
     """
-    # Get the absolute path of the `dbflow` package
-    package_dir = Path(__file__).resolve().parent.parent  # Adjust as needed
+    # Start searching from the current working directory
+    app_root = Path.cwd()
 
-    # Locate config.ini inside the package directory
-    config_path = package_dir / 'config.ini'
-    logger.info(f"Using config.ini from: {config_path}")
+    # Search for config.ini in current and parent directories (up to 3 levels)
+    config_path = None
+    for i in range(4):  # Search up to 3 parent directories
+        possible_path = app_root / "config.ini"
+        if possible_path.exists():
+            config_path = possible_path
+            break  # Stop searching once found
+        app_root = app_root.parent  # Move one level up
 
-    # Default paths (if config.ini is missing)
+    # Log the found config file or warning if missing
+    if config_path:
+        logger.info(f"Found config.ini at: {config_path}")
+    else:
+        logger.warning("Config file not found. Using default paths.")
+
+    # Default paths (fallback to dbflow's template if config.ini is missing)
+    package_dir = Path(__file__).resolve().parent.parent.parent
     default_paths = {
         'custom_sql_dir': package_dir / 'custom_template/sql',
         'custom_db_structure': package_dir / 'custom_template/db_structure.py',
     }
 
-    if not config_path.exists():
-        logger.warning("Config file not found inside dbflow package. Using default paths.")
-        return default_paths
+    if not config_path:
+        return default_paths  # Return defaults if config.ini is not found
 
     # Read config.ini
     config = configparser.ConfigParser()
