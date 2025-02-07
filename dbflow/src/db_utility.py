@@ -1159,11 +1159,14 @@ def get_custom_paths():
     config = configparser.ConfigParser()
     config.read(config_path)
 
-    return {
-        'custom_sql_dir': Path(config.get('paths', 'custom_sql_dir', fallback=str(default_paths['custom_sql_dir']))).resolve(),
-        'custom_db_structure': Path(config.get('paths', 'custom_db_structure', fallback=str(default_paths['custom_db_structure']))).resolve(),
-    }
+    # Get the directory where config.ini is located
+    config_dir = config_path.parent
 
+
+    return {
+        'custom_sql_dir': Path(config_dir /config.get('paths', 'custom_sql_dir', fallback=str(default_paths['custom_sql_dir']))).resolve(),
+        'custom_db_structure': Path(config_dir / config.get('paths', 'custom_db_structure', fallback=str(default_paths['custom_db_structure']))).resolve(),
+    }
 
 
 def create_sql(sql_file, replacements=None, write_sql=True):
