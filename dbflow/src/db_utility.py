@@ -1206,31 +1206,36 @@ def create_sql(sql_file, replacements=None, write_sql=True):
 
 def load_custom_structure():
     """
-    Dynamically loads the custom db_structure.py script based on the paths provided in config.ini.
+    Dynamically loads the custom db_structure.py script based on paths in config.ini.
 
     Returns
     -------
     module or None
         The loaded custom db_structure module, or None if the file does not exist.
     """
-    # Resolve custom paths
+    # Resolve paths
     paths = get_custom_paths()
     custom_db_structure_path = Path(paths['custom_db_structure']).resolve()
 
-    # Check if the custom db_structure.py exists
-    if custom_db_structure_path.exists():
-        try:
-            # Load the module dynamically
-            spec = importlib.util.spec_from_file_location("custom.db_structure", str(custom_db_structure_path))
-            custom_module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(custom_module)
-            logger.info(f"Loaded custom db_structure.py from {custom_db_structure_path}")
-            return custom_module
-        except Exception as e:
-            logger.warning(f"Error loading custom db_structure.py: {e}")
-            return None
-    else:
-        logger.info(f"Custom db_structure.py not found at {custom_db_structure_path}. Using default behavior.")
+    # Debugging: Print the resolved path
+    logger.info(f"Looking for db_structure.py at: {custom_db_structure_path}")
+
+    # Check if the custom_db_structure.py exists
+    if not custom_db_structure_path.exists():
+        logger.warning(f"Custom db_structure.py not found at {custom_db_structure_path}. Using default behavior.")
+        return None
+
+    try:
+        # Load the module dynamically
+        module_name = "custom_db_structure"
+        spec = importlib.util.spec_from_file_location(module_name, str(custom_db_structure_path))
+        custom_module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(custom_module)
+
+        logger.info(f"Successfully loaded custom db_structure.py from {custom_db_structure_path}")
+        return custom_module
+    except Exception as e:
+        logger.error(f"Error loading custom db_structure.py: {e}")
         return None
 
 
