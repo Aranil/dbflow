@@ -1119,27 +1119,29 @@ def query_sql(sql, db_engine):
 
 def get_custom_paths():
     """
-    Reads custom paths from the config.ini file in the application root.
-    Falls back to default paths in the dbflow package if config.ini is not found.
+    Reads custom paths from the config.ini file located inside the dbflow package.
+    Falls back to default paths if config.ini is not found.
 
     Returns
     -------
     dict
         A dictionary containing paths for custom SQL and database structure.
     """
-    # Locate config.ini in the current working directory
-    app_root = Path.cwd()
-    config_path = app_root.parent / 'config.ini'
-    logger.info(config_path)
+    # Get the absolute path of the `dbflow` package
+    package_dir = Path(__file__).resolve().parent.parent  # Adjust as needed
 
-    # Default paths (fall back to dbflow's custom_template if config.ini is missing)
+    # Locate config.ini inside the package directory
+    config_path = package_dir / 'config.ini'
+    logger.info(f"Using config.ini from: {config_path}")
+
+    # Default paths (if config.ini is missing)
     default_paths = {
-        'custom_sql_dir': Path(__file__).resolve().parent.parent.parent / 'custom_template/sql',
-        'custom_db_structure': Path(__file__).resolve().parent.parent.parent / 'custom_template/db_structure.py',
+        'custom_sql_dir': package_dir / 'custom_template/sql',
+        'custom_db_structure': package_dir / 'custom_template/db_structure.py',
     }
 
     if not config_path.exists():
-        logger.warning("Config file not found in the application directory. Using default paths.")
+        logger.warning("Config file not found inside dbflow package. Using default paths.")
         return default_paths
 
     # Read config.ini
