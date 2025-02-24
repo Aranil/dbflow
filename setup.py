@@ -38,7 +38,7 @@ setup(
 # conda env create -f environment.yml
 
 # run to install package
-# pip install git+ssh://git@github.com/your-user/your-private-repo.git
+# pip install dbflow @ git+https://github.com/Aranil/dbflow.git@main
 
 # TODO: tests, logfiles!!!
 # TODO: clean up the additional module
