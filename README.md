@@ -3,7 +3,8 @@ Module to handle SQLite database operations and provide utilities
 
 To install the module run
 
-run pip install git+ssh://git@github.com/Aranil/dbflow.git to install package
+run  dbflow @ git+https://github.com/Aranil/dbflow.git@main to install package
+
 
 To install required packages in conda env
 
@@ -86,10 +87,13 @@ my_application/
 
 Edit `config.ini` in the `dbflow` module to point to the copied `custom` folder in your project:
 
+Paths should be defined relative to the location of this config.ini file.
+Use forward slashes (`/`) for cross-platform compatibility.
+
 ```ini
 [paths]
-custom_sql_dir = ../custom/sql
-custom_db_structure = ../custom/db_structure.py
+custom_sql_dir = ./custom/sql
+custom_db_structure = ./custom/db_structure.py
 executed_sql_dir = ../_sql_executed
 ```
 
