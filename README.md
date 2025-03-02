@@ -3,7 +3,7 @@ Module to handle SQLite database operations and provide utilities
 
 To install the module run
 
-run  dbflow @ git+https://github.com/Aranil/dbflow.git@main to install package
+run pip install dbflow @ git+https://github.com/Aranil/dbflow.git@main to install package
 
 
 To install required packages in conda env
