@@ -28,7 +28,8 @@ setup(
     install_requires=[
         "geopandas",
         "SQLAlchemy",
-        "geoalchemy2"
+        "geoalchemy2",
+        "decouple"
     ],
 )
 
