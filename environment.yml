@@ -12,5 +12,6 @@ dependencies:
   - pip
   - pip:
       - geopandas
+      - geoalchemy2
   # Reinstall pyproj by removing it first
   - conda-forge::pyproj  # Explicitly reinstall from conda-forge # this is required because in WIN10 when libspatialite, gdal and sqlite are installed the paths 'PROJ_LIB' are not set properly for some reason and ST_Transform operations could not be performed despite that the proj.db and mod_spatilite.dll are exist, the reinstalling pyproj solves the problem
