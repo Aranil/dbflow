@@ -109,7 +109,7 @@ The following example demonstrates how to use the `load_custom_structure` functi
 #### Code Example
 ```python
 from dbflow.src.db_utility import load_custom_structure
-from dbflow.src.db_sqlalchemy import connect2db
+from dbflow.src.db_utility import connect2db
 from decouple import config
 
 def main():
@@ -133,8 +133,13 @@ def main():
 if __name__ == "__main__":
     main()
 ```    
-
-
+#### Code Example to insert data
+```python
+# df is pandas dataframe
+table_name = 'ml_transferability'
+pim_key = dbarchive.get_primary_keys(table_name)
+dbarchive.insert(table=table_name , primary_key=pim_key, orderly_data=df.to_dict(orient='records'), update=True)
+``` 
 
 
 
