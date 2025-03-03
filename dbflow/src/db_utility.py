@@ -1135,9 +1135,12 @@ def get_custom_paths():
             break  # Stop searching once found
         app_root = app_root.parent  # Move one level up
 
+    print(config_path)
+
     # Log the found config file or warning if missing
     if config_path:
         logger.info(f"Found config.ini at: {config_path}")
+        print(config_path, '!')
     else:
         logger.warning("Config file not found. Using default paths.")
 
