@@ -4,7 +4,7 @@ import configparser
 
 # Load config.ini
 config = configparser.ConfigParser()
-config.read("config.ini")
+config.read("../config.ini")
 
 # module name
 MODULE_NAME = "dbflow"
