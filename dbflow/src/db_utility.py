@@ -1128,21 +1128,20 @@ def get_custom_paths():
 
     # Search for config.ini in current and parent directories (up to 3 levels)
     config_path = None
-    for i in range(4):  # Search up to 3 parent directories
+    for _ in range(6):  # Search up to 5 parent directories
         possible_path = app_root / "config.ini"
         if possible_path.exists():
             config_path = possible_path
             break  # Stop searching once found
         app_root = app_root.parent  # Move one level up
 
-    print(config_path)
-
     # Log the found config file or warning if missing
     if config_path:
         logger.info(f"Found config.ini at: {config_path}")
-        print(config_path, '!')
+        config_dir = config_path.parent
     else:
         logger.warning("Config file not found. Using default paths.")
+        config_dir = None
 
     # Default paths (fallback to dbflow's template if config.ini is missing)
     package_dir = Path(__file__).resolve().parent.parent.parent
@@ -1151,20 +1150,17 @@ def get_custom_paths():
         'custom_db_structure': package_dir / 'custom_template/db_structure.py',
     }
 
+    # If no config file, return default paths
     if not config_path:
-        return default_paths  # Return defaults if config.ini is not found
+        return default_paths
 
     # Read config.ini
     config = configparser.ConfigParser()
     config.read(config_path)
 
-    # Get the directory where config.ini is located
-    config_dir = config_path.parent
-
-
     return {
-        'custom_sql_dir': Path(config_dir /config.get('paths', 'custom_sql_dir', fallback=str(default_paths['custom_sql_dir']))).resolve(),
-        'custom_db_structure': Path(config_dir / config.get('paths', 'custom_db_structure', fallback=str(default_paths['custom_db_structure']))).resolve(),
+        'custom_sql_dir': Path(config.get("paths", "custom_sql_dir", fallback=str(default_paths['custom_sql_dir']))),
+        'custom_db_structure': Path(config.get("paths", "custom_db_structure", fallback=str(default_paths['custom_db_structure']))),
     }
 
 
