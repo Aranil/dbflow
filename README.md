@@ -102,7 +102,6 @@ Logging Configuration. To manage logging settings, you can adjust the log level 
 [logging]
 level = WARNING                           # Change to INFO, DEBUG, ERROR, or CRITICAL as needed
 format = %(asctime)s - %(name)s - %(levelname)s - %(message)s
-[logging]
 log_file = logs/module.log                # Change the filename or directory if needed
 ```
 
