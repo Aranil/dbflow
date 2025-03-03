@@ -19,11 +19,7 @@ import shapely
 from shapely import wkt
 from geoalchemy2.shape import from_shape
 
-import logging
-
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from dbflow.logging_config import logger
 
 
 def convert_3D_2D(p):

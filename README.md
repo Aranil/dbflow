@@ -3,7 +3,7 @@ Module to handle SQLite database operations and provide utilities
 
 To install the module run
 
-run pip install dbflow @ git+https://github.com/Aranil/dbflow.git@main to install package
+pip install dbflow@git+https://github.com/Aranil/dbflow.git@main to install package
 
 
 To install required packages in conda env
@@ -95,6 +95,15 @@ Use forward slashes (`/`) for cross-platform compatibility.
 custom_sql_dir = ./custom/sql
 custom_db_structure = ./custom/db_structure.py
 executed_sql_dir = ../_sql_executed
+```
+
+Logging Configuration. To manage logging settings, you can adjust the log level and change the log file location as needed.
+```ini
+[logging]
+level = WARNING                           # Change to INFO, DEBUG, ERROR, or CRITICAL as needed
+format = %(asctime)s - %(name)s - %(levelname)s - %(message)s
+[logging]
+log_file = logs/module.log                # Change the filename or directory if needed
 ```
 
 ### Default Behavior

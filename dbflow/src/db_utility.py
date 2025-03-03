@@ -29,11 +29,7 @@ import importlib.util
 import custom_template
 from pathlib import Path
 
-import logging
-
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from dbflow.logging_config import logger
 
 
 
