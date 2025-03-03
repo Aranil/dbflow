@@ -10,7 +10,7 @@ config.read("config.ini")
 MODULE_NAME = "dbflow"
 
 # Get log file path dynamically
-log_file = config.get("logging", "log_file", fallback=f"logs/{MODULE_NAME}.log")
+log_file = config.get("logging", "log_file", fallback=f"../../_logs/{MODULE_NAME}.log")
 log_level = config.get("logging", "level", fallback="WARNING").upper()
 
 os.makedirs(os.path.dirname(log_file), exist_ok=True)

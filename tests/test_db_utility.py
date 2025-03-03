@@ -2,6 +2,9 @@ import unittest
 import os
 from dbflow.src.db_utility import create_sql
 
+
+from dbflow.logging_config import logger
+
 # TODO: add tests for critical functions !!
 
 class TestCreateSQL(unittest.TestCase):

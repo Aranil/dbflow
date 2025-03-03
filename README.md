@@ -100,9 +100,9 @@ executed_sql_dir = ../_sql_executed
 Logging Configuration. To manage logging settings, you can adjust the log level and change the log file location as needed.
 ```ini
 [logging]
-level = WARNING                           # Change to INFO, DEBUG, ERROR, or CRITICAL as needed
+level = WARNING                               # Change to INFO, DEBUG, ERROR, or CRITICAL as needed
 format = %(asctime)s - %(name)s - %(levelname)s - %(message)s
-log_file = logs/module.log                # Change the filename or directory if needed
+log_file = ../_logs/module.log                # Change the filename or directory if needed
 ```
 
 ### Default Behavior

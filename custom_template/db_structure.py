@@ -9,6 +9,9 @@ from sqlalchemy.ext.declarative import declarative_base
 from geoalchemy2 import Geometry
 from sqlalchemy.sql import func
 
+from dbflow.logging_config import logger
+
+
 Base = declarative_base()
 
 
