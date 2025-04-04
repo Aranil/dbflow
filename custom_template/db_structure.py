@@ -5,7 +5,7 @@ This file is Database and Project specific, change it or extend to generate cust
 """
 
 from sqlalchemy import Column, Integer, String, DateTime, Float, Boolean, CLOB,  Text, UnicodeText, UniqueConstraint, ForeignKey, ForeignKeyConstraint
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 from geoalchemy2 import Geometry
 from sqlalchemy.sql import func
 
