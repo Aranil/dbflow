@@ -1216,8 +1216,10 @@ def get_custom_paths():
     config.read(config_path)
 
     return {
-        'custom_sql_dir': Path(config.get("paths", "custom_sql_dir", fallback=str(default_paths['custom_sql_dir']))),
-        'custom_db_structure': Path(config.get("paths", "custom_db_structure", fallback=str(default_paths['custom_db_structure']))),
+        #'custom_sql_dir': Path(config.get("paths", "custom_sql_dir", fallback=str(default_paths['custom_sql_dir']))),
+        'custom_sql_dir':(config_dir / config.get("paths", "custom_sql_dir", fallback="custom_template/sql")).resolve(),
+        #'custom_db_structure': Path(config.get("paths", "custom_db_structure", fallback=str(default_paths['custom_db_structure']))),
+        'custom_db_structure': (config_dir / config.get("paths", "custom_db_structure", fallback="custom_template/db_structure.py")).resolve()
     }
 
 
