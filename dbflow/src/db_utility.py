@@ -154,6 +154,63 @@ class RCMArchive:
             else:
                 logger.info(f"Table '{table.name}' already exists.")
 
+    def create_table_from_sql(self, sql, table_name):
+        """
+        Executes a CREATE TABLE SQL statement for the given table,
+        only if the table does not already exist.
+
+        Parameters
+        ----------
+            sql (str): The CREATE TABLE SQL statement.
+            table_name (str): Name of the table being created.
+
+        Example
+        -------
+        >>> db = connect2db(r'...test\test.db')
+        >>> engine = db.archive.engine
+        >>> sql = create_sql(r"...test\ml_transferability.sql")
+        >>> db.create_table_from_sql(sql, "ml_transferability")
+        """
+        from sqlalchemy import inspect
+        try:
+            inspector = inspect(self.archive.engine)
+            existing_tables = inspector.get_table_names()
+
+            if table_name in existing_tables:
+                logger.info(f"Table '{table_name}' already exists. Skipping creation.")
+                info = self.get_table_info(table_name)
+
+                if info["exists"]:
+                    print("Columns:", info["columns"])
+                else:
+                    print("Table does not exist.")
+                return info
+
+            with self.archive.engine.connect() as conn:
+                conn.execute(text(sql))
+                logger.info(f"Table '{table_name}' created successfully.")
+
+        except Exception as e:
+            logger.error(f"Error creating table '{table_name}': {e}")
+            raise
+
+    def get_table_info(self, table_name):
+        '''
+        Parameters
+        ----------
+            table_name (str):
+
+        Returns
+        -------
+            dict
+        '''
+        try:
+            col_names = self.archive.get_colnames(table_name)
+            return {"exists": True, "columns": col_names}
+        except Exception as e:
+            logger.warning(f"Could not get columns for '{table_name}': {e}")
+            return {"exists": False, "columns": []}
+
 
     # Define the get_tablenames method as a function that returns table names
     def get_tablenames(self):
@@ -171,7 +228,7 @@ class RCMArchive:
             raise ValueError(f"Table '{table}' does not exist in the database.")
 
 
-    def get_geom_colnames(self, table: str = None) -> Union[Dict[str, str], List[str]]:
+    def get_geom_colnames(self, table=None) :
         """
         Retrieve all geometry columns for a specific table or for all tables in the database.
 

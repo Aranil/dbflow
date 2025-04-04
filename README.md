@@ -141,10 +141,18 @@ def main():
 if __name__ == "__main__":
     main()
 ```    
-#### Code Example to insert data
+#### Code Example to create table and insert data
 ```python
-# df is pandas dataframe
+from dbflow.src.db_utility import connect2db, create_sql
+
+dbarchive = connect2db(r'...db\RCM.db')
+engine = dbarchive.archive.engine
+sql = create_sql(r"...sql\ml_transferability.sql")
+
 table_name = 'ml_transferability'
+dbarchive.create_table_from_sql(sql, table_name)
+          
+# df is pandas dataframe
 pim_key = dbarchive.get_primary_keys(table_name)
 dbarchive.insert(table=table_name , primary_key=pim_key, orderly_data=df.to_dict(orient='records'), update=True)
 ``` 
