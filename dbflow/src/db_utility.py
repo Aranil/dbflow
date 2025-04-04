@@ -1223,12 +1223,15 @@ def get_custom_paths():
     }
 
 
-def create_sql(sql_file, replacements=None, write_sql=True):
+def create_sql(sql_file, replacements=None, write_sql=True, sql_dir=None):
     """
     Dynamically loads an SQL file and replaces placeholders with dynamic values.
     """
-    paths = get_custom_paths()
-    custom_sql_dir = paths['custom_sql_dir']
+    if sql_dir:
+        custom_sql_dir = Path(sql_dir)
+    else:
+        paths = get_custom_paths()
+        custom_sql_dir = paths['custom_sql_dir']
 
     # Resolve the full path to the SQL file
     sql_file_path = custom_sql_dir / sql_file
