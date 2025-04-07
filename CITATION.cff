@@ -12,3 +12,5 @@ repository-code: "https://github.com/Aranil/dbflow"
 license: "MIT"
 type: "software"
 abstract: "Module to handle SQLite database operations and provide utilities."
+acknowledgements: >
+    This project was carried out in the frame of the project *Radar-Crop-Monitor*, which was financed by the Federal Ministry for Economic Affairs and Climate Action (BMWK), Germany, under the support code FKZ: 50EE1901.
