@@ -209,3 +209,9 @@ plot_relationship_graph(relationships, primary_keys, group_colors={"users": "blu
 ```
 
 Contributors: [Markus Zehner](https://github.com/MarkusZehner/)
+
+
+## Citation
+If you use this project in your work, please cite it using the information in the [CITATION.cff](./CITATION.cff) file or via the "Cite this repository" button on GitHub.
+
+Thank you for supporting open science! 🙌
