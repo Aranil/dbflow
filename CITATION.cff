@@ -3,8 +3,8 @@ message: "If you use dbflow in your work, please cite it as below."
 title: "dbflow"
 version: "1.0.0"
 authors:
-  - family-names: "Aranil"
-    given-names: "Linara Arslanova, Markus Zehner"
+  - family-names: "Arslanova, Zehner"
+    given-names: "Linara, Markus"
     orcid: "https://orcid.org/0009-0002-5354-7344"
 date-released: 2025-02-05
 url: "https://github.com/Aranil/dbflow"
