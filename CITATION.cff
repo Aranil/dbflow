@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+message: "If you use dbflow in your work, please cite it as below."
+title: "dbflow"
+version: "1.0.0"
+authors:
+  - family-names: "Aranil"
+    given-names: "Linara Arslanova, Markus Zehner"
+    orcid: "https://orcid.org/0009-0002-5354-7344"
+date-released: 2025-02-05
+url: "https://github.com/Aranil/dbflow"
+repository-code: "https://github.com/Aranil/dbflow"
+license: "MIT"
+type: "software"
+abstract: "Module to handle SQLite database operations and provide utilities."
